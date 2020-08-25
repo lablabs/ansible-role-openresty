@@ -1,0 +1,9 @@
+{{ ansible_managed | comment }}
+
+{% if item.vars is defined %}
+{% for key, value in item.vars.items() %}
+{{ item.directive }} {{ key }} {{ value }};
+{% endfor %}
+{% elif item.data is defined %}
+{{ item.data }}
+{% endif %}

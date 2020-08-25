@@ -1,0 +1,43 @@
+---
+- name: Install required packages
+  package:
+    name: "{{ openresty_packages }}"
+    cache_valid_time: 3600
+    state: present
+
+- name: Install Openresty repository key
+  apt_key:
+    url: "{{ openresty_repo_key }}"
+    state: present
+  when: openresty_repo_key is defined
+
+- name: Add Openresty repository
+  apt_repository:
+    repo: "{{ openresty_repo_url }}"
+    update_cache: true
+    state: present
+  when: openresty_repo_url is defined
+
+- name: Install Openresty Server
+  package:
+    name: "{{ openresty_server_pkg }}"
+    state: present
+
+- name: Create dirs
+  file:
+    state: directory
+    path: "{{ item.path }}"
+    owner: "{{ item.owner | default(omit) }}"
+    group: "{{ item.group | default(omit) }}"
+  with_items:
+    - path: "{{ openresty_base_dir }}"
+    - path: "{{ openresty_log_dir }}"
+      owner: "{{ openresty_server_user }}"
+      group: "{{ openresty_server_group }}"
+
+    - path: "{{ openresty_conf_dir }}"
+    - path: "{{ openresty_base_dir }}/sites-enabled"
+
+    - path: "{{ openresty_ssl_key_dir }}"
+    - path: "{{ openresty_ssl_cert_dir }}"
+    - path: "{{ openresty_ssl_csr_dir }}"

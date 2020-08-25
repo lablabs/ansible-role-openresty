@@ -1,0 +1,38 @@
+{{ ansible_managed | comment }}
+
+{% for key, value in openresty_main_template.global_conf.items() | default({}) %}
+{{ key }} {{ value }};
+{% endfor %}
+
+{% if openresty_main_template.event_conf %}
+events {
+{% for key, value in openresty_main_template.event_conf.items() | default({}) %}
+{{ key }} {{ value }};
+{% endfor %}
+
+}
+{% endif %}
+
+{% if openresty_main_template.http_conf %}
+http {
+
+    {% for key, value in openresty_main_template.http_conf.items() | default({}) %}
+    {{- key }} {{ value }};
+    {% endfor %}
+
+    {% for params_file in openresty_params | default([]) -%}
+    {% if params_file.include | default(false) -%}
+    include {{ openresty_base_dir }}/{{ params_file.filename }};
+    {% endif -%}
+    {% endfor %}
+
+    {% for addtitional_params_file in openresty_addtional_params | default([]) -%}
+    {% if addtitional_params_file.include | default(false) -%}
+    include {{ openresty_base_dir }}/{{ addtitional_params_file.filename }};
+    {% endif -%}
+    {% endfor %}
+
+    include {{ openresty_conf_dir }}/*.conf;
+    include {{ openresty_base_dir }}/sites-enabled/*.conf;
+}
+{% endif %}

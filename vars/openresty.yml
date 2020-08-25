@@ -1,0 +1,36 @@
+---
+
+_openresty_repo_url: "deb http://openresty.org/package/ubuntu {{ ansible_distribution_release | lower }} main"
+_openresty_repo_key: https://openresty.org/package/pubkey.gpg
+_openresty_package_version: 1.17.8.2-1~bionic1
+_openresty_server_pkg: "openresty={{ _openresty_package_version }}"
+
+_openresty_root_dir: /usr/local/openresty/nginx/html
+
+_openrest_default_listen_options:
+  - default_server
+
+_openresty_systemd_service_path: /lib/systemd/system
+_openresty_systemd_service:
+  - service_name: openresty.service
+    service_enabled: yes
+    service_status: started
+    service_config:
+      Unit:
+        Description: full-fledged web platform
+        After: network.target
+
+      Service:
+        Type: forking
+        PIDFile: "{{ openresty_pid_dir }}/nginx.pid"
+        RuntimeDirectory: "{{ openresty_pid_dir | basename }}"
+        ExecStartPre: /usr/local/openresty/nginx/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -t -q -g 'daemon on; master_process on;'
+        ExecStart: /usr/local/openresty/nginx/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;'
+        ExecReload: /usr/local/openresty/nginx/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;' -s reload
+        ExecStop: /sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile {{ openresty_pid_dir }}/nginx.pid
+        TimeoutStopSec: 5
+        KillMode: mixed
+        LimitNOFILE: 60000
+
+      Install:
+        WantedBy: multi-user.target

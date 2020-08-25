@@ -1,0 +1,36 @@
+#jinja2: lstrip_blocks: True
+
+{% set _site_server_name = item.server_name %}
+{% set _site_root_dir = item.root_dir %}
+{% set _site_error_pages = item.error_pages %}
+
+{% for server in item.servers | default([]) %}
+server {
+  server_name {{ _site_server_name }};
+  root {{ _site_root_dir }};
+  listen {{ server.listen.port }} {% if server.listen.options is defined %}{{ server.listen.options }}{% endif %} {% if server.ssl is defined %}ssl{% endif %};
+
+  {% if server.ssl is defined %}
+  ssl_certificate_key {{ server.ssl.key }};
+  ssl_certificate {{ server.ssl.certificate}};
+  {% endif %}
+
+  {% for error in _site_error_pages | default([]) %}
+  error_page {{ error }};
+  {% endfor %}
+
+  {% for location in server.locations | default([]) %}
+  {% if location.path is defined %}
+  location {{ location.path }} {
+    {% for setting in location.conf| default([]) %}
+    {{ setting.keys() | first }} {{ setting.values() | first }};
+    {% endfor %}
+    {% if location.data is defined %}
+    {{ location.data }} 
+    {% endif %}
+
+  }
+  {% endif %}
+  {% endfor %}
+}
+{% endfor %}

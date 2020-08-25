@@ -1,0 +1,16 @@
+galaxy_info:
+  author: Adam Hamsik
+  description: Role for deploying openresty to production
+  company: Labyrinth Labs
+  license: MIT
+
+  min_ansible_version: 2.4
+
+  platforms:
+  - name: Ubuntu
+    versions:
+      - 18.04
+
+  galaxy_tags:
+    - openresty
+    - nginx

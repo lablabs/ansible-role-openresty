@@ -1,0 +1,20 @@
+---
+
+- name: Generate an OpenSSL private key
+  openssl_privatekey:
+    path: "{{ openresty_ssl_key_dir }}/{{ openresty_ssl_selfsigned_name }}.pem"
+    size: 4096
+    type: RSA
+
+- name: Generate an OpenSSL Certificate Signing Request
+  openssl_csr:
+    path: "{{ openresty_ssl_csr_dir }}/{{ openresty_ssl_selfsigned_name }}.csr"
+    privatekey_path: "{{ openresty_ssl_key_dir }}/{{ openresty_ssl_selfsigned_name }}.pem"
+    common_name: "{{ ansible_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: "{{ openresty_ssl_cert_dir }}/{{ openresty_ssl_selfsigned_name }}.crt"
+    privatekey_path: "{{ openresty_ssl_key_dir }}/{{ openresty_ssl_selfsigned_name }}.pem"
+    csr_path: "{{ openresty_ssl_csr_dir }}/{{ openresty_ssl_selfsigned_name }}.csr"
+    provider: selfsigned

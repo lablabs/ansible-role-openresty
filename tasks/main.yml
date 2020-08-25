@@ -1,0 +1,21 @@
+---
+- name: Gather Facts for deploy.openresty
+  setup:
+  when: ansible_facts == {}
+# do not rely on localhost ansible cache and gather facts is skipped when tags were used https://github.com/ansible/ansible/issues/57529
+
+- name: Check if openresty_variant is set correctly
+  fail:
+    msg: "openresty_variant variable needs to be one of nginx or openresty"
+  when: openresty_variant != "nginx" and openresty_variant != "openresty"
+
+- name: Include required variables
+  include_vars:
+    file: "{{ openresty_variant }}.yml"
+
+- import_tasks: install.yml
+
+- import_tasks: ssl.yml
+  when: openresty_ssl_selfsigned_generate
+
+- import_tasks: configure.yml

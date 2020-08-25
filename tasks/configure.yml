@@ -1,0 +1,66 @@
+---
+
+- name: Copy error pages
+  copy:
+    src: files/errors
+    dest: "{{ openresty_root_dir }}"
+
+- name: Copy ssl certificates
+  copy:
+    content: "{{ item.value.certificate_value }}"
+    dest: "{{ item.value.certificate }}"
+  with_dict: "{{ openresty_ssl_files }}"
+
+- name: Copy ssl keys
+  copy:
+    content: "{{ item.value.key_value }}"
+    dest: "{{ item.value.key }}"
+  with_dict: "{{ openresty_ssl_files }}"
+
+- name: Copy mime.types file
+  copy:
+    src: files/mime.types
+    dest: "{{ openresty_base_dir }}/mime.types"
+  notify:
+    - reload nginx
+
+- name: Configure nginx params files
+  template:
+    src: openresty/nginx.params.j2
+    dest: "{{ openresty_base_dir }}/{{ item.filename }}"
+  notify:
+    - reload nginx
+  with_items:
+    - "{{ openresty_params }}"
+    - "{{ openresty_addtional_params }}"
+
+- name: Configure nginx sites files
+  template:
+    src: openresty/conf.d/site.conf.j2
+    dest: "{{ openresty_conf_dir }}/{{ item.server_name }}.conf"
+  notify:
+    - reload nginx
+  with_items:
+    - "{{ openresty_default_sites_conf }}"
+    - "{{ openresty_sites_conf }}"
+
+- name: Configure nginx.conf
+  template:
+    src: openresty/nginx.conf.j2
+    dest:  "{{ openresty_base_dir }}/nginx.conf"
+    #validate: "{{ openresty_server_pkg }} -c %s -t"
+  notify:
+    - reload nginx
+
+- name: Generate dh group
+  command: "openssl dhparam -out {{ openresty_ssl_dhparam_file }} {{ openresty_ssl_dhparam_size }}"
+  args:
+    creates: "{{ openresty_ssl_dhparam_file }}"
+  notify: reload nginx
+
+- name: Create Openresty systemd service
+  include_role:
+    name: ansible.systemd-service
+  vars:
+    systemd_service: "{{ openresty_systemd_service }}"
+    systemd_service_path: "{{ openresty_systemd_service_path }}"
