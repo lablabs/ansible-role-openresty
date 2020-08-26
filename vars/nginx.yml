@@ -5,6 +5,7 @@ _openresty_server_pkg: nginx
 _openresty_server_service: nginx
 
 _openresty_root_dir: /usr/share/nginx/html
+_openresty_pid_dir: /var/run/nginx
 
 _openrest_default_listen_options:
   - default_server
@@ -21,11 +22,11 @@ _openresty_systemd_service:
 
       Service:
         Type: forking
-        PIDFile: "{{ openresty_pid_dir }}/nginx.pid"
+        PIDFile: "{{ openresty_pid_file }}"
         ExecStartPre: /usr/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -t -q -g 'daemon on; master_process on;'
         ExecStart: /usr/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;'
         ExecReload: /usr/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;' -s reload
-        ExecStop: "-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile {{ openresty_pid_dir }}/nginx.pid"
+        ExecStop: "-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile {{ openresty_pid_file }}"
         TimeoutStopSec: 5
         KillMode: mixed
 

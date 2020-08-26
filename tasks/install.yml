@@ -29,8 +29,13 @@
     path: "{{ item.path }}"
     owner: "{{ item.owner | default(omit) }}"
     group: "{{ item.group | default(omit) }}"
+    recurse: "{{ item.recurse | default(omit) }}"
   with_items:
     - path: "{{ openresty_base_dir }}"
+
+    - path: "{{ openresty_pid_dir }}"
+      recurse: true
+
     - path: "{{ openresty_log_dir }}"
       owner: "{{ openresty_server_user }}"
       group: "{{ openresty_server_group }}"
@@ -41,3 +46,4 @@
     - path: "{{ openresty_ssl_key_dir }}"
     - path: "{{ openresty_ssl_cert_dir }}"
     - path: "{{ openresty_ssl_csr_dir }}"
+
