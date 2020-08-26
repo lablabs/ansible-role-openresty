@@ -5,6 +5,7 @@ openresty_variant: openresty
 openresty_repo_url: "{{ _openresty_repo_url }}"
 openresty_repo_key: "{{ _openresty_repo_key }}"
 openresty_server_pkg: "{{ _openresty_server_pkg }}"
+openresty_service: "{{ _openresty_server_service }}"
 
 openresty_packages:
   - wget

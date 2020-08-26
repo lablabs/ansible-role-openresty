@@ -2,6 +2,7 @@
 _openresty_repo_url: ppa:nginx/stable
 _openresty_repo_key: https://openresty.org/package/pubkey.gpg
 _openresty_server_pkg: nginx
+_openresty_server_service: nginx
 
 _openresty_root_dir: /usr/share/nginx/html
 
