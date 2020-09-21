@@ -43,6 +43,25 @@
   with_items:
     - "{{ openresty_default_sites_conf }}"
     - "{{ openresty_sites_conf }}"
+  register: template_results
+
+- name: Set nginx managed sites
+  set_fact:
+    managed_files: "{{ template_results.results|selectattr('invocation', 'defined')|map(attribute='invocation.module_args.dest')|list }}"
+
+- name: Check all conf files in "{{ openresty_conf_dir }}"
+  find:
+    paths: "{{ openresty_conf_dir }}"
+    patterns: "*.conf"
+  register: all_files
+
+- name: Set unmanaged files in "{{ openresty_conf_dir }}"
+  set_fact:
+    files_to_delete: "{{ all_files.files|map(attribute='path')|difference(managed_files) }}"
+
+- name: Delete unmanaged files in "{{ openresty_conf_dir }}"
+  file: path={{ item }} state=absent
+  with_items: "{{ files_to_delete }}"
 
 - name: Configure nginx.conf
   template:
