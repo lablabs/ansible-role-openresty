@@ -1,0 +1,12 @@
+{{ openresty_log_dir }}/*.log {
+  daily
+  compress
+  delaycompress
+  rotate 2
+  missingok
+  nocreate
+  sharedscripts
+  postrotate
+    test ! -f {{ openresty_pid_file }} || kill -USR1 `cat {{ openresty_pid_file }}`
+  endscript
+}

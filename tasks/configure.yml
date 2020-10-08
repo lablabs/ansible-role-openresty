@@ -64,3 +64,9 @@
   vars:
     systemd_service: "{{ openresty_systemd_service }}"
     systemd_service_path: "{{ openresty_systemd_service_path }}"
+
+- name: Configure logrotate.d/openresty
+  template:
+    src: logrotate.d/openresty.j2
+    dest:  "{{ openresty_logrotate_dir }}/openresty"
+  when: openresty_logrotate_enabled
