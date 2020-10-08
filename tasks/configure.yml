@@ -57,11 +57,14 @@
 
 - name: Set unmanaged files in "{{ openresty_conf_dir }}"
   set_fact:
-    files_to_delete: "{{ all_files.files|map(attribute='path')|difference(managed_files) }}"
+    files_to_delete: "{{ all_files.files | map(attribute='path') | difference(managed_files) }}"
 
 - name: Delete unmanaged files in "{{ openresty_conf_dir }}"
-  file: path={{ item }} state=absent
+  file:
+    path: "{{ item }}"
+    state: absent
   with_items: "{{ files_to_delete }}"
+  when: openresty_conf_cleanup_unused_files
 
 - name: Configure nginx.conf
   template:

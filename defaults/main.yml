@@ -15,6 +15,7 @@ openresty_packages:
   - logrotate
 
 openresty_conf_dir: "{{ openresty_base_dir }}/conf.d"
+openresty_conf_cleanup_unused_files: false
 
 openresty_pid_dir: "{{ _openresty_pid_dir }}"
 openresty_pid_file: "{{ openresty_pid_dir }}/nginx.pid"
