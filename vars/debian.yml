@@ -1,0 +1,16 @@
+---
+
+_openresty_ssl_base_dir: /etc/ssl
+_openresty_ssl_cert_dir: "{{ _openresty_ssl_base_dir }}/certs"
+_openresty_ssl_csr_dir: "{{ _openresty_ssl_base_dir }}/csr"
+_openresty_ssl_key_dir: "{{ _openresty_ssl_base_dir }}/private"
+
+_openresty_server_user: www-data
+_openresty_server_group: www-data
+
+_openresty_packages:
+  - wget
+  - gnupg
+  - ca-certificates
+  - software-properties-common
+  - logrotate

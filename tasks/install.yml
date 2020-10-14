@@ -1,27 +1,5 @@
 ---
-- name: Install required packages
-  package:
-    name: "{{ openresty_packages }}"
-    cache_valid_time: 3600
-    state: present
-
-- name: Install Openresty repository key
-  apt_key:
-    url: "{{ openresty_repo_key }}"
-    state: present
-  when: openresty_repo_key is defined
-
-- name: Add Openresty repository
-  apt_repository:
-    repo: "{{ openresty_repo_url }}"
-    update_cache: true
-    state: present
-  when: openresty_repo_url is defined
-
-- name: Install Openresty Server
-  package:
-    name: "{{ openresty_server_pkg }}"
-    state: present
+- include_tasks: "install.{{ ansible_os_family | lower }}.yml"
 
 - name: Create dirs
   file:
@@ -30,6 +8,7 @@
     owner: "{{ item.owner | default(omit) }}"
     group: "{{ item.group | default(omit) }}"
     recurse: "{{ item.recurse | default(omit) }}"
+    mode: 0755
   with_items:
     - path: "{{ openresty_base_dir }}"
 
@@ -46,4 +25,3 @@
     - path: "{{ openresty_ssl_key_dir }}"
     - path: "{{ openresty_ssl_cert_dir }}"
     - path: "{{ openresty_ssl_csr_dir }}"
-

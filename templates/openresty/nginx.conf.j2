@@ -16,6 +16,10 @@ events {
 {% if openresty_main_template.http_conf %}
 http {
 
+    {% for key, value in openresty_main_template.http_logging_conf.items() | default({}) %}
+    log_format {{ key }} '{{ value }}';
+    {% endfor %}
+
     {% for key, value in openresty_main_template.http_conf.items() | default({}) %}
     {{- key }} {{ value }};
     {% endfor %}

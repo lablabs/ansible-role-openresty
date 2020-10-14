@@ -1,0 +1,19 @@
+---
+- name: Install required packages
+  package:
+    name: "{{ openresty_packages }}"
+    state: present
+
+- name: Add repository
+  yum_repository:
+    name: openresty
+    description: Openresty Repo
+    gpgcheck: true
+    repo_gpgcheck: false
+    enabled: true
+    baseurl: https://openresty.org/package/centos/$releasever/$basearch
+
+- name: Install Openresty Server
+  package:
+    name: "{{ openresty_server_pkg }}"
+    state: present

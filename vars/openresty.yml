@@ -3,7 +3,7 @@
 _openresty_repo_url: "deb http://openresty.org/package/ubuntu {{ ansible_distribution_release | lower }} main"
 _openresty_repo_key: https://openresty.org/package/pubkey.gpg
 _openresty_package_version: 1.17.8.2-1~bionic1
-_openresty_server_pkg: "openresty={{ _openresty_package_version }}"
+_openresty_server_pkg: openresty
 _openresty_server_service: openresty
 
 _openresty_root_dir: /usr/local/openresty/nginx/html

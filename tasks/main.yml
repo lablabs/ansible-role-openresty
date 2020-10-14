@@ -9,6 +9,10 @@
     msg: "openresty_variant variable needs to be one of nginx or openresty"
   when: openresty_variant != "nginx" and openresty_variant != "openresty"
 
+- name: Include OS specfic variables
+  include_vars:
+    file: "{{ ansible_os_family | lower }}.yml"
+
 - name: Include required variables
   include_vars:
     file: "{{ openresty_variant }}.yml"

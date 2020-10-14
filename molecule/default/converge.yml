@@ -1,0 +1,12 @@
+---
+- name: Converge
+  hosts: all
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+  # tasks:
+  #   - name: "Include ansible-role-openresty"
+  #     include_role:
+  #       name: ansible-role-openresty
+
+    # - name: test
+    #   debug: msg="ASDASDADAS"

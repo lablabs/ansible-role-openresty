@@ -1,0 +1,25 @@
+---
+
+- name: Install required packages
+  package:
+    name: "{{ openresty_packages }}"
+    cache_valid_time: 3600
+    state: present
+
+- name: Install Openresty repository key
+  apt_key:
+    url: "{{ openresty_repo_key }}"
+    state: present
+  when: openresty_repo_key is defined
+
+- name: Add Openresty repository
+  apt_repository:
+    repo: "{{ openresty_repo_url }}"
+    update_cache: true
+    state: present
+  when: openresty_repo_url is defined
+
+- name: Install Openresty Server
+  package:
+    name: "{{ openresty_server_pkg }}={{ _openresty_package_version }}"
+    state: present

@@ -4,23 +4,27 @@
   copy:
     src: files/errors
     dest: "{{ openresty_root_dir }}"
+    mode: 0644
 
 - name: Copy ssl certificates
   copy:
     content: "{{ item.value.certificate_value }}"
     dest: "{{ item.value.certificate }}"
+    mode: 0640
   with_dict: "{{ openresty_ssl_files }}"
 
 - name: Copy ssl keys
   copy:
     content: "{{ item.value.key_value }}"
     dest: "{{ item.value.key }}"
+    mode: 0400
   with_dict: "{{ openresty_ssl_files }}"
 
 - name: Copy mime.types file
   copy:
     src: files/mime.types
     dest: "{{ openresty_base_dir }}/mime.types"
+    mode: 0644
   notify:
     - reload nginx
 
@@ -28,6 +32,7 @@
   template:
     src: openresty/nginx.params.j2
     dest: "{{ openresty_base_dir }}/{{ item.filename }}"
+    mode: 0644
   notify:
     - reload nginx
   with_items:
@@ -38,6 +43,7 @@
   template:
     src: openresty/conf.d/site.conf.j2
     dest: "{{ openresty_conf_dir }}/{{ item.server_name }}.conf"
+    mode: 0644
   notify:
     - reload nginx
   with_items:
@@ -70,6 +76,7 @@
   template:
     src: openresty/nginx.conf.j2
     dest:  "{{ openresty_base_dir }}/nginx.conf"
+    mode: 0644
     #validate: "{{ openresty_server_pkg }} -c %s -t"
   notify:
     - reload nginx
@@ -91,4 +98,5 @@
   template:
     src: logrotate.d/openresty.j2
     dest:  "{{ openresty_logrotate_dir }}/openresty"
+    mode: 0644
   when: openresty_logrotate_enabled

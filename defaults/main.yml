@@ -7,30 +7,34 @@ openresty_repo_key: "{{ _openresty_repo_key }}"
 openresty_server_pkg: "{{ _openresty_server_pkg }}"
 openresty_service: "{{ _openresty_server_service }}"
 
-openresty_packages:
-  - wget
-  - gnupg
-  - ca-certificates
-  - software-properties-common
-  - logrotate
+openresty_packages: "{{ _openresty_packages }}"
 
+openresty_base_dir: /etc/openresty
 openresty_conf_dir: "{{ openresty_base_dir }}/conf.d"
 openresty_conf_cleanup_unused_files: false
 
 openresty_pid_dir: "{{ _openresty_pid_dir }}"
 openresty_pid_file: "{{ openresty_pid_dir }}/nginx.pid"
 
-openresty_log_dir: /var/log/nginx
 openresty_root_dir: "{{ _openresty_root_dir }}"
+openresty_log_dir: /var/log/nginx
+
+openresty_error_log_level: debug
+openresty_error_log_path: "{{ openresty_log_dir }}/error.log"
 
 openresty_logrotate_enabled: true
+openresty_logrotate_rotate: 5
 openresty_logrotate_dir: /etc/logrotate.d
 
 openresty_systemd_service_path: "{{ _openresty_systemd_service_path }}"
 openresty_systemd_service: "{{ _openresty_systemd_service }}"
 
-openresty_server_user: www-data
-openresty_server_group: www-data
+openresty_server_user: "{{ _openresty_server_user }}"
+openresty_server_group: "{{ _openresty_server_group }}"
+
+openresty_ssl_key_dir: "{{ _openresty_ssl_key_dir }}"
+openresty_ssl_cert_dir: "{{ _openresty_ssl_cert_dir }}"
+openresty_ssl_csr_dir: "{{ _openresty_ssl_csr_dir }}"
 
 openresty_ssl_dhparam_size: 2048
 openresty_ssl_dhparam_file: "{{ openresty_base_dir }}/dh{{ openresty_ssl_dhparam_size }}.pem"
@@ -52,17 +56,21 @@ openresty_main_template:
     user: "{{ openresty_server_user }}"
     worker_processes: auto
     #worker_rlimit_nofile: 1024
-    error_log: "{{ openresty_log_dir }}/error.log debug"
+    error_log: "{{ openresty_error_log_path }} {{ openresty_error_log_level }}"
     pid: "{{ openresty_pid_file }}"
   event_conf:
     worker_connections: 1024
     multi_accept: 'on'
+
+  http_logging_conf:
+    main:  '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
+    access_format: 'server="$host" dest_port="$server_port" dest_ip="$server_addr" src="$remote_addr" user="$remote_user" time_local="$time_local" protocol="$server_protocol" request="$request" status="$status" bytes_out="$body_bytes_sent" bytes_in="$upstream_response_length" http_referer="$http_referer" http_user_agent="$http_user_agent" nginx_version="$nginx_version" http_x_forwarded_for="$http_x_forwarded_for" http_x_header="$http_x_header" uri_query="$query_string" uri_path="$uri" http_method="$request_method" response_time="$upstream_response_time" cookie="$http_cookie" request_time="$request_time" client_platform="$http_pf_platform" cf_ray="$http_cf_ray" x_ver_key="$http_x_ver_key"'
+
   http_conf:
     include: "{{ openresty_base_dir }}/mime.types"
     default_type:  application/octet-stream
     keepalive_timeout: 65
     access_log: 'off'
-    log_format:  main  '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
 
     sendfile: 'on'
     tcp_nopush: 'on'
@@ -76,7 +84,7 @@ openresty_main_template:
     gzip: 'on'
     #gzip_disable: "MSIE [1-6].(?!.*SV1)"
     gzip_vary: 'on'
-    gzip_proxied: anyx
+    gzip_proxied: any
     gzip_comp_level: 6
     gzip_buffers: 16 8k
     gzip_http_version: 1.1
