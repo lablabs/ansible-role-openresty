@@ -26,17 +26,23 @@ http {
 
     {% for params_file in openresty_params | default([]) -%}
     {% if params_file.include | default(false) -%}
-    include {{ openresty_base_dir }}/{{ params_file.filename }};
+    include {{ openresty_conf_dir }}/{{ params_file.filename }};
+    {% endif -%}
+    {% endfor %}
+
+    {% for params_file in openresty_lua_params | default([]) -%}
+    {% if params_file.include | default(false) -%}
+    include {{ openresty_conf_dir }}/{{ params_file.filename }};
     {% endif -%}
     {% endfor %}
 
     {% for addtitional_params_file in openresty_addtional_params | default([]) -%}
     {% if addtitional_params_file.include | default(false) -%}
-    include {{ openresty_base_dir }}/{{ addtitional_params_file.filename }};
+    include {{ openresty_conf_dir }}/{{ addtitional_params_file.filename }};
     {% endif -%}
     {% endfor %}
 
-    include {{ openresty_conf_dir }}/*.conf;
-    include {{ openresty_base_dir }}/sites-enabled/*.conf;
+    include {{ openresty_confd_dir }}/*.conf;
+    include {{ openresty_conf_dir }}/sites-enabled/*.conf;
 }
 {% endif %}

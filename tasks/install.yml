@@ -1,6 +1,9 @@
 ---
 - include_tasks: "install.{{ ansible_os_family | lower }}.yml"
 
+- import_tasks: lua.yml
+  when: openresty_lua_install
+
 - name: Create dirs
   file:
     state: directory
@@ -10,17 +13,16 @@
     recurse: "{{ item.recurse | default(omit) }}"
     mode: 0755
   with_items:
-    - path: "{{ openresty_base_dir }}"
+    - path: "{{ openresty_conf_dir }}"
 
     - path: "{{ openresty_pid_dir }}"
-      recurse: true
 
     - path: "{{ openresty_log_dir }}"
       owner: "{{ openresty_server_user }}"
       group: "{{ openresty_server_group }}"
 
-    - path: "{{ openresty_conf_dir }}"
-    - path: "{{ openresty_base_dir }}/sites-enabled"
+    - path: "{{ openresty_confd_dir }}"
+    - path: "{{ openresty_conf_dir }}/sites-enabled"
 
     - path: "{{ openresty_ssl_key_dir }}"
     - path: "{{ openresty_ssl_cert_dir }}"

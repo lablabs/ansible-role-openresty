@@ -6,8 +6,85 @@ _openresty_package_version: 1.17.8.2-1~bionic1
 _openresty_server_pkg: openresty
 _openresty_server_service: openresty
 
-_openresty_root_dir: /usr/local/openresty/nginx/html
-_openresty_pid_dir: /usr/local/openresty/nginx/logs
+_openresty_base_dir: /usr/local/openresty
+_openresty_root_dir: "{{ _openresty_base_dir }}/nginx/html"
+_openresty_pid_dir: "{{ _openresty_base_dir }}/nginx/logs"
+
+_openresty_lua_install: true
+_openresty_lua_lib_path: "{{ _openresty_base_dir }}/site/lualib"
+
+_openresty_lua_default_pkgs:
+  - knyar/nginx-lua-prometheus
+_openresty_lua_prometheus_port: 9145
+_openresty_lua_prometheus_url: /metrics
+
+_openresty_lua_params:
+  - filename: prometheus-lua
+    include: "{{ openresty_lua_install }}"
+    data: |
+      lua_shared_dict prometheus_metrics 10M;
+      lua_package_path "{{ openresty_lua_lib_path }}/prometheus/?.lua;;";
+      init_worker_by_lua_block {
+        prometheus = require("prometheus").init("prometheus_metrics")
+        metric_requests = prometheus:counter(
+          "nginx_http_requests_total", "Number of HTTP requests", {"host", "status"})
+        metric_latency = prometheus:histogram(
+          "nginx_http_request_duration_seconds", "HTTP request latency", {"host"})
+        metric_connections = prometheus:gauge(
+          "nginx_http_connections", "Number of HTTP connections", {"state"})
+        metric_connections_host = prometheus:counter(
+          "nginx_http_connections_host", "Number of HTTP connections", {"host", "state"})
+        metric_connection_requests = prometheus:counter(
+          "nginx_http_connection_requests", "Number of HTTP connections", {"host"})
+      }
+      log_by_lua_block {
+        metric_requests:inc(1, {ngx.var.server_name, ngx.var.status})
+        metric_latency:observe(tonumber(ngx.var.request_time), {ngx.var.server_name})
+        metric_connections_host:inc(tonumber(ngx.var.connections_reading), {ngx.var.server_name, "reading"})
+        metric_connections_host:inc(tonumber(ngx.var.connections_waiting), {ngx.var.server_name, "waiting"})
+        metric_connections_host:inc(tonumber(ngx.var.connections_writing), {ngx.var.server_name, "writing"})
+        metric_connections_host:inc(tonumber(ngx.var.connections_active), {ngx.var.server_name, "active"})
+        metric_connection_requests:inc(tonumber(ngx.var.connection_requests), {ngx.var.server_name})
+      }
+  - filename: prometheus-metrics
+    include: false
+    data: |
+      allow 10.0.0.251/32;
+      allow 10.0.0.252/32;
+      allow 10.0.0.25/32;
+      allow 127.0.0.1;
+      deny all;
+
+      content_by_lua_block {
+        metric_connections:set(ngx.var.connections_reading, {"reading"})
+        metric_connections:set(ngx.var.connections_waiting, {"waiting"})
+        metric_connections:set(ngx.var.connections_writing, {"writing"})
+        metric_connections:set(ngx.var.connections_active, {"active"})
+        prometheus:collect()
+      }
+
+_openresty_lua_default_sites_conf:
+  - filename: metrics
+    server_name: _
+    root_dir: "{{ openresty_root_dir }}"
+    error_pages:
+      - 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 421 422 423 424 426 428 429 431 451 /40x.html
+    servers:
+      - listen:
+          port: "{{ _openresty_lua_prometheus_port }}"
+          options: "{{ openresty_default_listen_options | join(' ') }}"
+        locations:
+          - path: "{{ _openresty_lua_prometheus_url }}"
+            conf:
+              - include: "{{ openresty_conf_dir }}/prometheus-metrics"
+          - path: /
+            conf:
+              - return: 404
+          - path: = /40x.html
+            conf:
+              - ssi: 'on'
+              - internal:
+              - root: "{{ openresty_root_dir }}/errors"
 
 _openrest_default_listen_options:
   - default_server
@@ -26,9 +103,9 @@ _openresty_systemd_service:
         Type: forking
         PIDFile: "{{ openresty_pid_file }}"
         RuntimeDirectory: "{{ openresty_pid_dir | basename }}"
-        ExecStartPre: /usr/local/openresty/nginx/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -t -q -g 'daemon on; master_process on;'
-        ExecStart: /usr/local/openresty/nginx/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;'
-        ExecReload: /usr/local/openresty/nginx/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;' -s reload
+        ExecStartPre: "{{ _openresty_base_dir }}/nginx/sbin/nginx -c {{ openresty_conf_dir }}/nginx.conf -t -q -g 'daemon on; master_process on;'"
+        ExecStart: "{{ _openresty_base_dir }}/nginx/sbin/nginx -c {{ openresty_conf_dir }}/nginx.conf -g 'daemon on; master_process on;'"
+        ExecReload: "{{ _openresty_base_dir }}/nginx/sbin/nginx -c {{ openresty_conf_dir }}/nginx.conf -g 'daemon on; master_process on;' -s reload"
         ExecStop: /sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile {{ openresty_pid_file }}
         TimeoutStopSec: 5
         KillMode: mixed

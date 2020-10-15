@@ -1,0 +1,8 @@
+---
+- name: Install defined LUA packages to Openresty
+  command: opm install {{ item }}
+  register: _lua_opm_install
+  with_items:
+    - "{{ openresty_lua_default_pkgs }}"
+    - "{{ openresty_lua_additional_pkgs }}"
+  changed_when: "'installed successfully' in _lua_opm_install.stdout"

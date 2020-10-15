@@ -4,8 +4,16 @@ _openresty_repo_key: https://openresty.org/package/pubkey.gpg
 _openresty_server_pkg: nginx
 _openresty_server_service: nginx
 
-_openresty_root_dir: /usr/share/nginx/html
+_openresty_base_dir: /usr/share/nginx
+_openresty_root_dir: "{{ _openresty_base_dir }}/html"
 _openresty_pid_dir: /var/run/nginx
+
+_openresty_lua_lib_path: "{{ _openresty_base_dir }}/lualib"
+_openresty_lua_install: false
+
+_openresty_lua_default_pkgs: []
+_openresty_lua_params: []
+_openresty_lua_default_sites_conf: []
 
 _openrest_default_listen_options:
   - default_server
@@ -23,9 +31,9 @@ _openresty_systemd_service:
       Service:
         Type: forking
         PIDFile: "{{ openresty_pid_file }}"
-        ExecStartPre: /usr/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -t -q -g 'daemon on; master_process on;'
-        ExecStart: /usr/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;'
-        ExecReload: /usr/sbin/nginx -c {{ openresty_base_dir }}/nginx.conf -g 'daemon on; master_process on;' -s reload
+        ExecStartPre: /usr/sbin/nginx -c {{ openresty_conf_dir }}/nginx.conf -t -q -g 'daemon on; master_process on;'
+        ExecStart: /usr/sbin/nginx -c {{ openresty_conf_dir }}/nginx.conf -g 'daemon on; master_process on;'
+        ExecReload: /usr/sbin/nginx -c {{ openresty_conf_dir }}/nginx.conf -g 'daemon on; master_process on;' -s reload
         ExecStop: "-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile {{ openresty_pid_file }}"
         TimeoutStopSec: 5
         KillMode: mixed

@@ -23,7 +23,7 @@ openresty_packages:
   - ca-certificates
   - software-properties-common
 
-openresty_conf_dir: "{{ openresty_base_dir }}/conf.d"
+openresty_confd_dir: "{{ openresty_conf_dir }}/conf.d"
 
 openresty_pid_dir: "{{ _openresty_pid_dir }}"
 openresty_pid_file: "{{ openresty_pid_dir }}/nginx.pid"
@@ -39,7 +39,7 @@ openresty_server_user: www-data
 openresty_server_group: www-data
 
 openresty_ssl_dhparam_size: 2048
-openresty_ssl_dhparam_file: "{{ openresty_base_dir }}/dh{{ openresty_ssl_dhparam_size }}.pem"
+openresty_ssl_dhparam_file: "{{ openresty_conf_dir }}/dh{{ openresty_ssl_dhparam_size }}.pem"
 
 openresty_ssl_selfsigned_generate: true
 openresty_ssl_selfsigned_name: default
@@ -64,7 +64,7 @@ openresty_main_template:
     worker_connections: 1024
     multi_accept: 'on'
   http_conf:
-    include: "{{ openresty_base_dir }}/mime.types"
+    include: "{{ openresty_conf_dir }}/mime.types"
     default_type:  application/octet-stream
     keepalive_timeout: 65
     access_log: 'off'

@@ -23,7 +23,7 @@
 - name: Copy mime.types file
   copy:
     src: files/mime.types
-    dest: "{{ openresty_base_dir }}/mime.types"
+    dest: "{{ openresty_conf_dir }}/mime.types"
     mode: 0644
   notify:
     - reload nginx
@@ -31,23 +31,25 @@
 - name: Configure nginx params files
   template:
     src: openresty/nginx.params.j2
-    dest: "{{ openresty_base_dir }}/{{ item.filename }}"
+    dest: "{{ openresty_conf_dir }}/{{ item.filename }}"
     mode: 0644
   notify:
     - reload nginx
   with_items:
     - "{{ openresty_params }}"
+    - "{{ openresty_lua_params }}"
     - "{{ openresty_addtional_params }}"
 
 - name: Configure nginx sites files
   template:
     src: openresty/conf.d/site.conf.j2
-    dest: "{{ openresty_conf_dir }}/{{ item.server_name }}.conf"
+    dest: "{{ openresty_confd_dir }}/{{ item.filename }}.conf"
     mode: 0644
   notify:
     - reload nginx
   with_items:
     - "{{ openresty_default_sites_conf }}"
+    - "{{ openresty_lua_default_sites_conf }}"
     - "{{ openresty_sites_conf }}"
   register: template_results
 
@@ -55,17 +57,17 @@
   set_fact:
     managed_files: "{{ template_results.results|selectattr('invocation', 'defined')|map(attribute='invocation.module_args.dest')|list }}"
 
-- name: Check all conf files in "{{ openresty_conf_dir }}"
+- name: Check all conf files in "{{ openresty_confd_dir }}"
   find:
-    paths: "{{ openresty_conf_dir }}"
+    paths: "{{ openresty_confd_dir }}"
     patterns: "*.conf"
   register: all_files
 
-- name: Set unmanaged files in "{{ openresty_conf_dir }}"
+- name: Set unmanaged files in "{{ openresty_confd_dir }}"
   set_fact:
     files_to_delete: "{{ all_files.files | map(attribute='path') | difference(managed_files) }}"
 
-- name: Delete unmanaged files in "{{ openresty_conf_dir }}"
+- name: Delete unmanaged files in "{{ openresty_confd_dir }}"
   file:
     path: "{{ item }}"
     state: absent
@@ -75,7 +77,7 @@
 - name: Configure nginx.conf
   template:
     src: openresty/nginx.conf.j2
-    dest:  "{{ openresty_base_dir }}/nginx.conf"
+    dest:  "{{ openresty_conf_dir }}/nginx.conf"
     mode: 0644
     #validate: "{{ openresty_server_pkg }} -c %s -t"
   notify:
@@ -85,7 +87,8 @@
   command: "openssl dhparam -out {{ openresty_ssl_dhparam_file }} {{ openresty_ssl_dhparam_size }}"
   args:
     creates: "{{ openresty_ssl_dhparam_file }}"
-  notify: reload nginx
+  notify:
+    - reload nginx
 
 - name: Create Openresty systemd service
   include_role:

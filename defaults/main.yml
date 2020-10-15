@@ -9,8 +9,10 @@ openresty_service: "{{ _openresty_server_service }}"
 
 openresty_packages: "{{ _openresty_packages }}"
 
-openresty_base_dir: /etc/openresty
-openresty_conf_dir: "{{ openresty_base_dir }}/conf.d"
+openresty_base_dir: "{{ _openresty_base_dir }}"
+
+openresty_conf_dir: /etc/openresty
+openresty_confd_dir: "{{ openresty_conf_dir }}/conf.d"
 openresty_conf_cleanup_unused_files: false
 
 openresty_pid_dir: "{{ _openresty_pid_dir }}"
@@ -32,12 +34,20 @@ openresty_systemd_service: "{{ _openresty_systemd_service }}"
 openresty_server_user: "{{ _openresty_server_user }}"
 openresty_server_group: "{{ _openresty_server_group }}"
 
+openresty_lua_install: "{{ _openresty_lua_install }}"
+openresty_lua_lib_path: "{{ _openresty_lua_lib_path }}"
+openresty_lua_default_pkgs: "{{ _openresty_lua_default_pkgs }}"
+openresty_lua_additional_pkgs: []
+
+openresty_lua_params: "{{ _openresty_lua_params }}"
+openresty_lua_default_sites_conf: "{{ _openresty_lua_default_sites_conf }}"
+
 openresty_ssl_key_dir: "{{ _openresty_ssl_key_dir }}"
 openresty_ssl_cert_dir: "{{ _openresty_ssl_cert_dir }}"
 openresty_ssl_csr_dir: "{{ _openresty_ssl_csr_dir }}"
 
 openresty_ssl_dhparam_size: 2048
-openresty_ssl_dhparam_file: "{{ openresty_base_dir }}/dh{{ openresty_ssl_dhparam_size }}.pem"
+openresty_ssl_dhparam_file: "{{ openresty_conf_dir }}/dh{{ openresty_ssl_dhparam_size }}.pem"
 
 openresty_ssl_selfsigned_generate: true
 openresty_ssl_selfsigned_name: default
@@ -67,7 +77,7 @@ openresty_main_template:
     access_format: 'server="$host" dest_port="$server_port" dest_ip="$server_addr" src="$remote_addr" user="$remote_user" time_local="$time_local" protocol="$server_protocol" request="$request" status="$status" bytes_out="$body_bytes_sent" bytes_in="$upstream_response_length" http_referer="$http_referer" http_user_agent="$http_user_agent" nginx_version="$nginx_version" http_x_forwarded_for="$http_x_forwarded_for" http_x_header="$http_x_header" uri_query="$query_string" uri_path="$uri" http_method="$request_method" response_time="$upstream_response_time" cookie="$http_cookie" request_time="$request_time" client_platform="$http_pf_platform" cf_ray="$http_cf_ray" x_ver_key="$http_x_ver_key"'
 
   http_conf:
-    include: "{{ openresty_base_dir }}/mime.types"
+    include: "{{ openresty_conf_dir }}/mime.types"
     default_type:  application/octet-stream
     keepalive_timeout: 65
     access_log: 'off'
@@ -203,7 +213,8 @@ openresty_default_listen_options: "{{ _openrest_default_listen_options + openres
 openresty_additional_listen_options: []
 
 openresty_default_sites_conf:
-  - server_name: _
+  - filename: default
+    server_name: _
     root_dir: "{{ openresty_root_dir }}"
     error_pages:
       - 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 421 422 423 424 426 428 429 431 451 /40x.html

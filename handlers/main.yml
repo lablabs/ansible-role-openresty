@@ -1,7 +1,7 @@
 ---
 
 - name: verify nginx
-  command: "{{ openresty_service }} -c {{ openresty_base_dir }}/nginx.conf -t"
+  command: "{{ openresty_service }} -c {{ openresty_conf_dir }}/nginx.conf -t"
 
 - name: reload nginx
   service:

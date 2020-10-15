@@ -1,6 +1,8 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    openresty_conf_cleanup_unused_files: true
   roles:
     - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
   # tasks:
