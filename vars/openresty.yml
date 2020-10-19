@@ -49,12 +49,7 @@ _openresty_lua_params:
   - filename: prometheus-metrics
     include: false
     data: |
-      allow 10.0.0.251/32;
-      allow 10.0.0.252/32;
-      allow 10.0.0.25/32;
-      allow 10.0.0.101/32;
-      allow 127.0.0.1;
-      deny all;
+      include "{{ openresty_conf_dir }}/allow-deny-traffic";
 
       content_by_lua_block {
         metric_connections:set(ngx.var.connections_reading, {"reading"})

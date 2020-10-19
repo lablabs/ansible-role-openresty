@@ -61,6 +61,7 @@ openresty_ssl_files: {}
 #     certificate_value:  "{{ ssl_test2_cert }}"
 #     key: "{{ openresty_ssl_key_dir }}/test2.com.key"
 #     key_value: "{{ ssl_test2.com_key }}"
+
 openresty_main_template:
   global_conf:
     user: "{{ openresty_server_user }}"
@@ -206,6 +207,10 @@ openresty_params:
         511 'Network Authentication Required';
         default 'Something is wrong';
       }
+  - filename: allow-deny-traffic
+    include: false
+    data: |
+      {{ openresty_allow_deny_block }}
 
 openresty_addtional_params: []
 
@@ -227,12 +232,7 @@ openresty_default_sites_conf:
           - path: ~ /nginx_status
             conf:
               - stub_status: 'on'
-              - access_log: 'off'
-              - allow: 127.0.0.1
-              - allow: 10.0.0.251/32
-              - allow: 10.0.0.252/32
-              - allow: 10.0.0.25/32
-              - deny: all
+              - include: "{{ openresty_conf_dir }}/allow-deny-traffic"
           - path: /
             conf:
               - return: 404
@@ -256,12 +256,7 @@ openresty_default_sites_conf:
           - path: ~ /nginx_status
             conf:
               - stub_status: 'on'
-              - access_log: 'off'
-              - allow: 127.0.0.1
-              - allow: 10.0.0.251/32
-              - allow: 10.0.0.252/32
-              - allow: 10.0.0.25/32
-              - deny: all
+              - include: "{{ openresty_conf_dir }}/allow- -traffic"
           - path: /
             conf:
               - return: 404
@@ -277,3 +272,12 @@ openresty_default_sites_conf:
               - root: "{{ openresty_root_dir }}/errors"
 
 openresty_sites_conf: []
+
+openresty_allow_deny_block: |
+  access_log 'off';
+  allow 10.0.0.251/32;
+  allow 10.0.0.252/32;
+  allow 10.0.0.25/32;
+  allow 10.0.0.101/32;
+  allow 127.0.0.1;
+  deny all;
