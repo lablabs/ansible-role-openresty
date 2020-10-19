@@ -69,7 +69,7 @@ openresty_main_template:
     error_log: "{{ openresty_error_log_path }} {{ openresty_error_log_level }}"
     pid: "{{ openresty_pid_file }}"
   event_conf:
-    worker_connections: 4086
+    worker_connections: 4096
     multi_accept: 'on'
 
   http_logging_conf:
