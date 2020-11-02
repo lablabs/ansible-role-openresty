@@ -256,7 +256,7 @@ openresty_default_sites_conf:
           - path: ~ /nginx_status
             conf:
               - stub_status: 'on'
-              - include: "{{ openresty_conf_dir }}/allow- -traffic"
+              - include: "{{ openresty_conf_dir }}/allow-deny-traffic"
           - path: /
             conf:
               - return: 404
