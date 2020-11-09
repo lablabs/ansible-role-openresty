@@ -217,10 +217,13 @@ openresty_addtional_params: []
 openresty_default_listen_options: "{{ _openrest_default_listen_options + openresty_additional_listen_options }}"
 openresty_additional_listen_options: []
 
+access_log_format: "access_format"
+
 openresty_default_sites_conf:
   - filename: default
     server_name: _
     root_dir: "{{ openresty_root_dir }}"
+    access_log: "{{ openresty_log_dir }}/default.log {{ access_log_format }}"
     error_pages:
       - 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 421 422 423 424 426 428 429 431 451 /40x.html
       - 500 501 502 503 504 505 506 507 508 510 511 /50x.html
