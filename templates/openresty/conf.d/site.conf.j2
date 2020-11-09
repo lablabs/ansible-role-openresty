@@ -9,7 +9,9 @@
 server {
   server_name {{ _site_server_name }};
   root {{ _site_root_dir }};
-  {% if _site_access_log is defined  %}
+  {% if _site_access_log.path is defined %}
+  access_log {{ _site_access_log.path }} {{ _site_access_log.format | default(openresty_default_access_log_format) }};
+  {% elif _site_access_log is defined %}
   access_log {{ _site_access_log }};
   {% endif %}
   listen {{ server.listen.port }} {% if server.listen.options is defined %}{{ server.listen.options }}{% endif %} {% if server.ssl is defined %}ssl{% endif %};
