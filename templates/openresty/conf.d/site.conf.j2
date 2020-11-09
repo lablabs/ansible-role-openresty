@@ -3,11 +3,17 @@
 {% set _site_server_name = item.server_name %}
 {% set _site_root_dir = item.root_dir %}
 {% set _site_error_pages = item.error_pages %}
+{% set _site_access_log = item.access_log %}
 
 {% for server in item.servers | default([]) %}
 server {
   server_name {{ _site_server_name }};
   root {{ _site_root_dir }};
+  {% if _site_access_log.path is defined %}
+  access_log {{ _site_access_log.path }} {{ _site_access_log.format | default(openresty_default_access_log_format) }};
+  {% elif _site_access_log is defined %}
+  access_log {{ _site_access_log }};
+  {% endif %}
   listen {{ server.listen.port }} {% if server.listen.options is defined %}{{ server.listen.options }}{% endif %} {% if server.ssl is defined %}ssl{% endif %};
 
   {% if server.ssl is defined %}
